@@ -153,5 +153,5 @@ if error_log(response, 'chat.postMessage'):
     print('api error')
     sys.exit(1)
 
-
+print(message)
 
