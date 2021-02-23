@@ -5,7 +5,8 @@ from pandas import json_normalize
 
 # slack bot token 불러오기
 # json으로 저장한 token.json 파일을 읽어와서 token key 조회
-slack_token_path = './token.json'
+parent_path = '/Users/jeonjaemin/Desktop/git_repos/TIL_ALERT_SLACK_BOT'
+slack_token_path = parent_path + '/resource/token.json'
 with open(slack_token_path, 'r') as token_json:
     slack_dict = json.load(token_json)
 
@@ -30,7 +31,7 @@ params = {
 response = requests.get(URL, params=params)
 
 # response error check
-error_log_path = '../log/error_log.log'
+error_log_path = parent_path + '/log/error_log.log'
 if not response.json()['ok']:
     with open(error_log_path, 'a') as error_log_file:
         error_log_message = f'[error][conversation.list][{datetime.datetime.now()}] call \'conversation.list\' api error. \n[error message]{response.json()["error"]}\n'
@@ -64,7 +65,7 @@ data = {
 response = requests.post(URL, data=data)
 
 # response error check
-error_log_path = '../log/error_log.log'
+error_log_path = parent_path + '/log/error_log.log'
 if not response.json()['ok']:
     with open(error_log_path, 'a') as error_log_file:
         error_log_message = f'[error][chat.postMessage][{datetime.datetime.now()}] call \'chat.postMessage\' api error. \n[error message]{response.json()["error"]}\n'
