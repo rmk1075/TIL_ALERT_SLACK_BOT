@@ -41,6 +41,8 @@ def find_users(slack_token: str, channel_id: str) -> list[str]:
         sys.exit(1)
     
     for message in response.json()['messages']:
+        if message['user'] == 'U01NKV5PPCP':
+            continue
         user_list.add(message['user'])
 
     return list(user_list)
@@ -127,6 +129,8 @@ if len(args) != 1 and args[1] == '0':
 else:
     # til 작성한 user들의 id 조회
     user_list = find_users(slack_token, channel_id)
+
+    print(user_list)
 
     # user_list의 user id를 통해서 user 이름 조회
     user_names, user_cnt = find_names(slack_token, channel_id, user_list)
