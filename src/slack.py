@@ -45,6 +45,8 @@ def find_users(slack_token: str, channel_id: str) -> list[str]:
 
     return list(user_list)
 
+
+# user_id에 해당하는 사용자의 이름을 str로 반환하는 함수
 def find_user(slack_token: str, channel_id: str, user_id: str) -> str:
     # 사용자 정보 조회 api
     # https://api.slack.com/methods/users.info
@@ -63,16 +65,17 @@ def find_user(slack_token: str, channel_id: str, user_id: str) -> str:
         print('api error')
         sys.exit(1)
     
-    return response.json()['user']['name']
+    return response.json()['user']['real_name']
 
 
-# til 작성한 사용자들의 이름을 list로 반환하는 함수
-def find_names(slack_token: str, channel_id: str, user_list: list[str]) -> list[str]:
-    user_names = []
+# til 작성한 사용자들의 이름을 str, 숫자를 int로 반환하는 함수
+def find_names(slack_token: str, channel_id: str, user_list: list[str]) -> (str, int):
+    user_names, user_cnt = '', 0
     for user_id in user_list:
-        user_names.append(find_user(slack_token, channel_id, user_id))
+        user_names += find_user(slack_token, channel_id, user_id) + ', '
+        user_cnt += 1
     
-    return user_names
+    return user_names, user_cnt
 
 
 # slack bot token 불러오기
@@ -126,9 +129,9 @@ else:
     user_list = find_users(slack_token, channel_id)
 
     # user_list의 user id를 통해서 user 이름 조회
-    user_names = find_names(slack_token, channel_id, user_list)
+    user_names, user_cnt = find_names(slack_token, channel_id, user_list)
 
-    message = f'금일 til을 작성한 인원은 {user_names}, 총 {len(user_names)}명 입니다. 오늘 하루도 수고하셨습니다.'
+    message = f'금일 til을 작성한 인원은 {user_names}총 {user_cnt}명 입니다.\n오늘 하루도 수고하셨습니다.'
 
 # 메시지 전송 api method (chat.postMessage)
 # https://api.slack.com/methods/chat.postMessage
