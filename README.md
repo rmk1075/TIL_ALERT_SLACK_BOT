@@ -18,4 +18,4 @@
 
 2. python으로 Slack bot 만들기 (<https://jammdev.tistory.com/19>)
 
-3. crontab 등록하여 자동실행하기: (<https://jammdev.tistory.com/20>)
+3. crontab 등록하여 자동실행하기 (<https://jammdev.tistory.com/20>)
