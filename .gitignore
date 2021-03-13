@@ -130,3 +130,5 @@ dmypy.json
 
 # token
 token.json
+
+.DS_Store
