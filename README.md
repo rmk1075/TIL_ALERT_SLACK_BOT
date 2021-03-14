@@ -19,3 +19,5 @@
 2. python으로 Slack bot 만들기 (<https://jammdev.tistory.com/19>)
 
 3. crontab 등록하여 자동실행하기 (<https://jammdev.tistory.com/20>)
+
+4. 함수 생성하여 기능 나누기 + til 메세지 날짜 체크 로직 추가
