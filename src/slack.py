@@ -1,5 +1,6 @@
 import sys, datetime, time
 import json
+from typing import Tuple
 import requests
 from pandas import json_normalize
 
@@ -71,7 +72,7 @@ def find_user(slack_token: str, channel_id: str, user_id: str) -> str:
 
 
 # til 작성한 사용자들의 이름을 str, 숫자를 int로 반환하는 함수
-def find_names(slack_token: str, channel_id: str, user_list: list[str]) -> (str, int):
+def find_names(slack_token: str, channel_id: str, user_list: list[str]) -> Tuple(str, int):
     user_names, user_cnt = '', 0
     for user_id in user_list:
         user_names += find_user(slack_token, channel_id, user_id) + ', '
