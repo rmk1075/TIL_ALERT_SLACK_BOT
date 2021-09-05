@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  # proj service 정의
+  til_alert_slack_bot:
+    # docker run -i
+    stdin_open: true
+    # docker run -t
+    tty: true
+    # build from the Dockerfile in current directory
+    build: .
+    # mount the project directory (./) on the host to /usr/app inside the container
+    volumes:
+      - ../../TIL_ALERT_SLACK_BOT:/usr/app
+    # set environment variables
+    environment:
+      # set encoding C.UTF-8
+      LC_ALL: C.UTF-8
