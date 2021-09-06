@@ -155,12 +155,12 @@ with open(slack_token_path, 'r') as token_json:
     slack_dict = json.load(token_json)
 
 # api 사용을 위한 token 선택 - 'token', 'test_token'
-slack_token = slack_dict['test_token']
-# slack_token = slack_dict['token']
+# slack_token = slack_dict['test_token']
+slack_token = slack_dict['token']
 
 # Bot이 활동할 채널의 이름
-channel_name = "til"
-# channel_name = 'today-i-learned'
+# channel_name = "til"
+channel_name = 'today-i-learned'
 
 
 # conversations.list api를 사용하여서 slack 대화 채널 id 조회
