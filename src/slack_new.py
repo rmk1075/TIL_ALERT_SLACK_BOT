@@ -109,7 +109,7 @@ def find_user_name(slack_token: str, channel_id: str, user_id: str) -> str:
     return response.json()['user']['real_name']
 
 # til 작성한 사용자들의 이름을 str, 숫자를 int로 반환하는 함수
-def find_user_names(slack_token: str, channel_id: str, user_list: list[str]) -> tuple(str, int):
+def find_user_names(slack_token: str, channel_id: str, user_list: list[str]) -> (str, int):
     user_names, user_cnt = '', 0
     for user_id in user_list:
         user_names += find_user_name(slack_token, channel_id, user_id) + ', '
@@ -155,12 +155,12 @@ with open(slack_token_path, 'r') as token_json:
     slack_dict = json.load(token_json)
 
 # api 사용을 위한 token 선택 - 'token', 'test_token'
-# slack_token = slack_dict['test_token']
-slack_token = slack_dict['token']
+slack_token = slack_dict['test_token']
+# slack_token = slack_dict['token']
 
 # Bot이 활동할 채널의 이름
-# channel_name = "til"
-channel_name = 'today-i-learned'
+channel_name = "til"
+# channel_name = 'today-i-learned'
 
 
 # conversations.list api를 사용하여서 slack 대화 채널 id 조회
