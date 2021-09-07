@@ -1,12 +1,20 @@
-import sys, datetime, time
+import os
+import sys
+import datetime
+import time
 import json
 import requests
 import re
+import argparse
+
 from pandas import json_normalize
+from typing import List
 
 # api 요청에서 에러발생 시 에러 로그 생성하고 시스템 종료하는 함수
-def error_log(response: requests.models.Response, api_name: str) -> bool:
-    error_log_path = parent_path + '/log/error_log.log'
+def error_log(response: requests.models.Response, api_name: str):
+    # TODO: error_log_path
+    # error_log_path = parent_path + '/log/error_log.log'
+    error_log_path = '../log/error_log/log'
     if not response.json()['ok']:
         with open(error_log_path, 'a') as error_log_file:
             error_log_message = f'[error][{api_name}][{datetime.datetime.now()}] call \'{api_name}\' api error. \n[error message]{response.json()["error"]}\n'
@@ -17,7 +25,7 @@ def error_log(response: requests.models.Response, api_name: str) -> bool:
     return False
 
 # slack bot이 활동할 slack 채널 id 반환하는 함수
-def find_channel_id(slack_token: str, channel_name: str) -> str:
+def find_channel_id(slack_token: str, channel_name: str):
     # 슬랙 채널 조회하기
     # 채널 조회 api method (conversations.list)
     # https://api.slack.com/methods/conversations.list 확인
@@ -47,7 +55,7 @@ def find_channel_id(slack_token: str, channel_name: str) -> str:
     return channel_id
 
 # til 작성한 사용자들을 list로 반환하는 함수
-def find_user_list(slack_token: str, channel_id: str) -> list[str]:
+def find_user_list(slack_token: str, channel_id: str):
     user_list = set([])
 
     # 대화 히스토리 api
@@ -88,7 +96,7 @@ def find_user_list(slack_token: str, channel_id: str) -> list[str]:
     return list(user_list)
 
 # user_id에 해당하는 사용자의 이름을 str로 반환하는 함수
-def find_user_name(slack_token: str, channel_id: str, user_id: str) -> str:
+def find_user_name(slack_token: str, channel_id: str, user_id: str):
     # 사용자 정보 조회 api
     # https://api.slack.com/methods/users.info
     URL = 'https://slack.com/api/users.info'
@@ -109,7 +117,7 @@ def find_user_name(slack_token: str, channel_id: str, user_id: str) -> str:
     return response.json()['user']['real_name']
 
 # til 작성한 사용자들의 이름을 str, 숫자를 int로 반환하는 함수
-def find_user_names(slack_token: str, channel_id: str, user_list: list[str]) -> (str, int):
+def find_user_names(slack_token: str, channel_id: str, user_list: List[str]):
     user_names, user_cnt = '', 0
     for user_id in user_list:
         user_names += find_user_name(slack_token, channel_id, user_id) + ', '
@@ -143,34 +151,83 @@ def post_message(slack_token, channel_id, message):
 
 
 class Slack:
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self._token_path = kwargs["token_path"]
+        self._token_name = kwargs["token_name"]
         self._token = None
-        self._channel_name = None
-        self._api_url = None
+        self._channel_name = kwargs["channel_name"]
 
+        self._token = self._load_token(self._token_path, self._token_name)
+        if self._token == None:
+            return None
+
+    def _load_token(self, token_path: str, token_name: str):
+        tokens = []
+        with open(token_path, 'r') as token_json:
+            tokens = json.load(token_json)
+
+        # token_name validation
+        if token_name not in tokens.keys():
+            sys.stderr.write(f"Wrong token name is given. - {token_name}\n")
+            return None
+
+        return tokens[token_name]
+
+    @property
+    def token(self):
+        return self._token
+
+    @property
+    def channel_name(self):
+        return self._channel_name
+
+
+class Api:
+    def __init__(self, **kwargs):
+        self._url = kwargs["url"]
+
+    @property
+    def url(self):
+        return self._url
+
+    def request(self, method: str, params: dict):
+        # API 호출
+        response = requests.get(self._url + method, params=params)
+        return response
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='../resource/token.json')
+parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
+# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
+parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
+# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
+parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
 
 if __name__ == "__main__":
     # 현재 시간 log
     print(time.strftime('%c', time.localtime(time.time())))
 
-    # slack bot token 불러오기
-    # json으로 저장한 token.json 파일을 읽어와서 token key 조회
-    parent_path = '/Users/jeonjaemin/Desktop/git_repos/TIL_ALERT_SLACK_BOT'
-    slack_token_path = parent_path + '/resource/token.json'
-    with open(slack_token_path, 'r') as token_json:
-        slack_dict = json.load(token_json)
+    args = parser.parse_args()
+    token_path = args.token_path
+    token_name = args.token_name
+    channel_name = args.channel_name
+    url = args.url
 
-    # api 사용을 위한 token 선택 - 'token', 'test_token'
-    slack_token = slack_dict['test_token']
-    # slack_token = slack_dict['token']
+    # init Slack
+    slack = Slack(token_path=token_path, token_name=token_name, channel_name=channel_name)
+    if not slack:
+        sys.stderr.write("Failed to init Slack instance.\n")
+        sys.exit(-1)
 
-    # Bot이 활동할 채널의 이름
-    channel_name = "til"
-    # channel_name = 'today-i-learned'
-
+    # init Api
+    api = Api(url=url)
+    if not api:
+        sys.stderr.write("Failed to inint Api instance.\n")
+        sys.exit(-1)
 
     # conversations.list api를 사용하여서 slack 대화 채널 id 조회
-    channel_id = find_channel_id(slack_token, channel_name)
+    channel_id = find_channel_id(slack.token, slack.channel_name)
 
 
     # bot이 전송할 메세지 생성
@@ -180,12 +237,14 @@ if __name__ == "__main__":
         message = f'현재시간 {datetime.datetime.now().strftime("%H:%M")}입니다.\n아직 til을 작성하지 않으신 분은 빠르게 작성해주세요.'
     else:
         # conversations.history api를 사용하여서 til 작성한 user들의 id 조회
-        user_list = find_user_list(slack_token, channel_id)
+        # user_list = find_user_list(slack_token, channel_id)
+        user_list = find_user_list(slack.token, channel_id)
 
         print(user_list)
 
         # user_list의 user id를 통해서 user 이름 조회
-        user_names, user_cnt = find_user_names(slack_token, channel_id, user_list)
+        # user_names, user_cnt = find_user_names(slack_token, channel_id, user_list)
+        user_names, user_cnt = find_user_names(slack.token, channel_id, user_list)
 
         print(user_names)
         print(user_cnt)
@@ -194,4 +253,5 @@ if __name__ == "__main__":
 
 
     # 메세지 전송
-    post_message(slack_token, channel_id, message)
+    # post_message(slack_token, channel_id, message)
+    post_message(slack.token, channel_id, message)
