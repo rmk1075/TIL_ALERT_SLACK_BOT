@@ -141,6 +141,14 @@ def post_message(slack_token, channel_id, message):
 
     print(message)
 
+
+class Slack:
+    def __init__(self):
+        self._token = None
+        self._channel_name = None
+        self._api_url = None
+
+
 if __name__ == "__main__":
     # 현재 시간 log
     print(time.strftime('%c', time.localtime(time.time())))
