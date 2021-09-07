@@ -2,6 +2,10 @@ version: "3.9"
 services:
   # proj service 정의
   til_alert_slack_bot:
+    # docker build
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     # docker run -i
     stdin_open: true
     # docker run -t
