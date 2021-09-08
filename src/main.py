@@ -230,6 +230,7 @@ parser.add_argument("-t", "--token_name", help="name of token", type=str, defaul
 parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
 # parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
 parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
+parser.add_argument("--alert", help="excute alert mode", action="store_true")
 
 if __name__ == "__main__":
     # 현재 시간 log
@@ -267,9 +268,8 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # bot이 전송할 메세지 생성
-    # args의 값에 따라서 메세지 내용 변경
-    args = sys.argv[0:]
-    if len(args) != 1 and args[1] == '0':
+    # argument '--alert' 사용시 alert 모드로 실행
+    if args.alert:
         message = f'현재시간 {datetime.datetime.now().strftime("%H:%M")}입니다.\n아직 til을 작성하지 않으신 분은 빠르게 작성해주세요.'
     else:
         # conversations.history api를 사용하여서 til 작성한 user들의 id 조회
