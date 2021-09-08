@@ -24,36 +24,6 @@ def error_log(response: requests.models.Response, api_name: str):
             return True
     return False
 
-# slack bot이 활동할 slack 채널 id 반환하는 함수
-def find_channel_id(slack_token: str, channel_name: str):
-    # 슬랙 채널 조회하기
-    # 채널 조회 api method (conversations.list)
-    # https://api.slack.com/methods/conversations.list 확인
-    URL = 'https://slack.com/api/conversations.list'
-
-    # 파라미터
-    # required args - token, accepted content type
-    params = {
-        'token': slack_token,
-        'Content-Type': 'application/x-www-form-urlencoded'
-        }
-
-    # API 호출
-    response = requests.get(URL, params=params)
-
-    # response error check
-    if error_log(response, 'conversations.list'):
-        print('api error')
-        sys.exit(1)
-
-    # 채널 리스트
-    channel_list = json_normalize(response.json()['channels'])
-    channel_id = list(channel_list.loc[channel_list['name'] == channel_name, 'id'])[0]
-
-    print('채널 이름: ', channel_name, '채널 id:', channel_id)
-
-    return channel_id
-
 # til 작성한 사용자들을 list로 반환하는 함수
 def find_user_list(slack_token: str, channel_id: str):
     user_list = set([])
@@ -190,10 +160,67 @@ class Api:
     def url(self):
         return self._url
 
+    # API 호출
     def request(self, method: str, params: dict):
-        # API 호출
-        response = requests.get(self._url + method, params=params)
+        response = requests.get(method, params=params)
         return response
+
+    # conversations.list
+    def get_conversations_list(self, params: dict):
+        try:
+            response = self.request(method=self._url + "conversations.list", params=params)
+
+            # TODO:
+            print(response)
+
+            if not response.json()['ok']:
+                raise ApiException(f'[error][{method}][{datetime.datetime.now()}] call \'{api_name}\' api error. \n[error message]{response.json()["error"]}\n')
+            return response                
+        except ApiException as e:
+            return None
+        except Exception as e:
+            print(f"error occured : {e}")
+            return None
+
+
+class ApiHandler:
+    def __init__(self, api: Api):
+        self.__api = api
+
+    def get_channel_id(self, token: str, channel_name: str):
+        # 파라미터
+        # required args - token, accepted content type
+        params = {
+            'token': token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        conversations = self.__api.get_conversations_list(params)
+        if not conversations:
+            sys.stderr.write("Failed to get conversations list\n")
+            return None
+
+        # 채널 리스트
+        channel_list = json_normalize(conversations.json()['channels'])
+        channel_id = list(channel_list.loc[channel_list['name'] == channel_name, 'id'])[0]
+
+        print('채널 이름: ', channel_name, '채널 id:', channel_id)
+
+        return channel_id
+
+
+class ApiException(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+        self.error_log(message)
+
+    # api 요청에서 에러발생 시 에러 로그 생성하고 시스템 종료하는 함수
+    def error_log(self, message: str):
+        # TODO: error_log_path hardcoding
+        error_log_path = '../log/error_log/log'
+        with open(error_log_path, 'a') as error_log_file:
+            error_log_file.write(message)
+            print(message)
 
 
 parser = argparse.ArgumentParser()
@@ -223,12 +250,21 @@ if __name__ == "__main__":
     # init Api
     api = Api(url=url)
     if not api:
-        sys.stderr.write("Failed to inint Api instance.\n")
+        sys.stderr.write("Failed to init Api instance.\n")
+        sys.exit(-1)
+
+    # create ApiHandler
+    api_handler = ApiHandler(api)
+    if not api_handler:
+        sys.stderr.wrtie("Failed to create ApiHandler instance.\n")
         sys.exit(-1)
 
     # conversations.list api를 사용하여서 slack 대화 채널 id 조회
-    channel_id = find_channel_id(slack.token, slack.channel_name)
-
+    # channel_id = find_channel_id(slack.token, slack.channel_name)
+    channel_id = api_handler.get_channel_id(slack.token, slack.channel_name)
+    if not channel_id:
+        sys.stderr.write("Failed to get channel_id")
+        sys.exit(-1)
 
     # bot이 전송할 메세지 생성
     # args의 값에 따라서 메세지 내용 변경
