@@ -167,16 +167,28 @@ class Api:
 
     # conversations.list
     def get_conversations_list(self, params: dict):
+        method = 'conversations.list'
         try:
-            response = self.request(method=self._url + "conversations.list", params=params)
-
-            # TODO:
-            print(response)
-
+            response = self.request(method=self._url + method, params=params)
             if not response.json()['ok']:
-                raise ApiException(f'[error][{method}][{datetime.datetime.now()}] call \'{api_name}\' api error. \n[error message]{response.json()["error"]}\n')
+                raise ApiException(f'[error][{method}][{datetime.datetime.now()}] call \'{method}\' api error. \n[error message]{response.json()["error"]}\n')
             return response                
         except ApiException as e:
+            print(f"Api Exception occurred: {e}")
+            return None
+        except Exception as e:
+            print(f"error occured : {e}")
+            return None
+
+    # request api
+    def api_request(self, method: str, params: dict):
+        try:
+            response = self.request(method=self._url + method, params=params)
+            if not response.json()['ok']:
+                raise ApiException(f'[error][{method}][{datetime.datetime.now()}] call \'{method}\' api error. \n[error message]{response.json()["error"]}\n')
+            return response                
+        except ApiException as e:
+            print(f"Api Exception occurred: {e}")
             return None
         except Exception as e:
             print(f"error occured : {e}")
@@ -207,6 +219,41 @@ class ApiHandler:
         print('채널 이름: ', channel_name, '채널 id:', channel_id)
 
         return channel_id
+
+    def get_user_list(self, token: str, channel_id: str):
+        user_list = set([])
+
+        # oldest 시간 구하기 (현재 시간에서 1day를 빼고 계산)
+        oldest = time.mktime((datetime.datetime.now() - datetime.timedelta(days = 1)).timetuple())
+
+        # 파라미터
+        params = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'token': token,
+            'channel': channel_id,
+            'oldest': oldest
+        }
+
+        conversations_history = self.__api.api_request(method='conversations.history', params=params)
+        if not conversations_history:
+            sys.stderr.write("Failed to get conversations history.\n")
+            return None
+        
+        # 어제 날짜 확인을 위한 patter 생성
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        pattern = re.compile(yesterday.strftime('\\[%Y.%m.%d\\]') + '*')
+
+        # 메세지 확인
+        # 1. slack bot 제외 ('U01NKV5PPCP')
+        # 2. 날짜 확인
+        for message in conversations_history.json()['messages']:
+            if message['user'] == 'U01NKV5PPCP':
+                continue
+
+            if pattern.match(message['text']):
+                user_list.add(message['user'])
+
+        return list(user_list)
 
 
 class ApiException(Exception):
@@ -272,9 +319,11 @@ if __name__ == "__main__":
     if args.alert:
         message = f'현재시간 {datetime.datetime.now().strftime("%H:%M")}입니다.\n아직 til을 작성하지 않으신 분은 빠르게 작성해주세요.'
     else:
+        # TODO: test
         # conversations.history api를 사용하여서 til 작성한 user들의 id 조회
         # user_list = find_user_list(slack_token, channel_id)
-        user_list = find_user_list(slack.token, channel_id)
+        # user_list = find_user_list(slack.token, channel_id)
+        user_list = api_handler.get_user_list(slack.token, channel_id)
 
         print(user_list)
 
