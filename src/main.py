@@ -13,10 +13,10 @@ from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/resource/token.json')
-parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
-# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
-parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
-# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
+# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
+parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
+# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
+parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
 parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")
 
@@ -71,12 +71,17 @@ if __name__ == "__main__":
             sys.exit(-1)
 
         # user_list의 user id를 통해서 user 이름 조회
-        user_names = api_handler.get_user_names(slack.token, channel_id, user_list)
-        if user_names == None:
+        user_names_list = api_handler.get_user_names(slack.token, channel_id, user_list)
+        if user_names_list == None:
             sys.stderr.write("Failed to get user_names\n")
             sys.exit(-1)
+        user_cnt = len(user_names_list)
 
-        user_cnt = len(user_names)
+        user_names = ''
+        if 0 < user_cnt:
+            for user_name in user_names_list:
+                user_names += user_name + ', '
+
         message = f'금일 til을 작성한 인원은 {user_names}총 {user_cnt}명 입니다.\n오늘 하루도 수고하셨습니다.'
 
     # 메세지 전송
