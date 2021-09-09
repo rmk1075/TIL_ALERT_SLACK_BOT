@@ -227,6 +227,7 @@ class ApiHandler:
         oldest = time.mktime((datetime.datetime.now() - datetime.timedelta(days = 1)).timetuple())
 
         # 파라미터
+        method = 'conversations.history'
         params = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'token': token,
@@ -234,9 +235,9 @@ class ApiHandler:
             'oldest': oldest
         }
 
-        conversations_history = self.__api.api_request(method='conversations.history', params=params)
+        conversations_history = self.__api.api_request(method=method, params=params)
         if not conversations_history:
-            sys.stderr.write("Failed to get conversations history.\n")
+            sys.stderr.write(f"Failed to get {method}.\n")
             return None
         
         # 어제 날짜 확인을 위한 patter 생성
@@ -254,6 +255,30 @@ class ApiHandler:
                 user_list.add(message['user'])
 
         return list(user_list)
+
+    def get_user_name(self, token: str, channel_id: str, user_id: str):
+        # 파라미터
+        method = 'users.info'
+        params = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'token': token,
+            'user': user_id,
+        }
+
+        # response = requests.get(self., params=params)
+        user_info = self.__api.api_request(method=method, params=params)
+        if not user_info:
+            sys.stderr.write(f"Failed to get {method}")
+            return None
+        
+        return user_info.json()['user']['real_name']
+
+    def get_user_names(self, token: str, channel_id: str, user_list: List[str]):
+        user_names = []
+        for user_id in user_list:
+            user_names.append(self.get_user_name(token, channel_id, user_id))
+        
+        return user_names
 
 
 class ApiException(Exception):
@@ -311,7 +336,7 @@ if __name__ == "__main__":
     # channel_id = find_channel_id(slack.token, slack.channel_name)
     channel_id = api_handler.get_channel_id(slack.token, slack.channel_name)
     if not channel_id:
-        sys.stderr.write("Failed to get channel_id")
+        sys.stderr.write("Failed to get channel_id\n")
         sys.exit(-1)
 
     # bot이 전송할 메세지 생성
@@ -324,16 +349,21 @@ if __name__ == "__main__":
         # user_list = find_user_list(slack_token, channel_id)
         # user_list = find_user_list(slack.token, channel_id)
         user_list = api_handler.get_user_list(slack.token, channel_id)
+        if not user_list:
+            sys.stderr.write("Failed to get user_list")
+            sys.exit(-1)
 
         print(user_list)
 
         # user_list의 user id를 통해서 user 이름 조회
         # user_names, user_cnt = find_user_names(slack_token, channel_id, user_list)
-        user_names, user_cnt = find_user_names(slack.token, channel_id, user_list)
+        # user_names, user_cnt = find_user_names(slack.token, channel_id, user_list)
+        user_names = api_handler.get_user_names(slack.token, channel_id, user_list)
+        if not user_names:
+            sys.stderr.write("Failed to get user_names\n")
+            sys.exit(-1)
 
-        print(user_names)
-        print(user_cnt)
-
+        user_cnt = len(user_names)
         message = f'금일 til을 작성한 인원은 {user_names}총 {user_cnt}명 입니다.\n오늘 하루도 수고하셨습니다.'
 
 
