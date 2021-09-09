@@ -12,7 +12,7 @@ from api.api import Api
 from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/usr/app/resource/token.json')
+parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/resource/token.json')
 parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
 # parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
 parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
@@ -25,7 +25,8 @@ if __name__ == "__main__":
     print(time.strftime('%c', time.localtime(time.time())))
 
     args = parser.parse_args()
-    token_path = args.token_path
+    parent_path = os.path.abspath('..')
+    token_path = parent_path + args.token_path
     token_name = args.token_name
     channel_name = args.channel_name
     url = args.url
