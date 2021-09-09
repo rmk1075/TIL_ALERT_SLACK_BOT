@@ -280,6 +280,23 @@ class ApiHandler:
         
         return user_names
 
+    def post_message(self, token: str, channel_id, message: str):
+        # 파라미터
+        method = 'chat.postMessage'
+        params = {
+            'Context_Type': 'application/x-www-form-urlencoded',
+            'token': token,
+            'channel': channel_id,
+            'text': message
+        }
+
+        response = self.__api.api_request(method=method, params=params)
+        if not response:
+            sys.stderr.write(f"Failed to {method}.\n")
+            return False
+        else:
+            return True
+
 
 class ApiException(Exception):
     def __init__(self, message):
@@ -369,4 +386,7 @@ if __name__ == "__main__":
 
     # 메세지 전송
     # post_message(slack_token, channel_id, message)
-    post_message(slack.token, channel_id, message)
+    # post_message(slack.token, channel_id, message)
+    if not api_handler.post_message(slack.token, channel_id, message):
+        sys.stderr.write("Failed to post message")
+        sys.exit(-1)
