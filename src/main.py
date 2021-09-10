@@ -4,6 +4,7 @@ import datetime
 import time
 import json
 import argparse
+import pathlib
 
 from typing import List
 
@@ -13,7 +14,7 @@ from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")
-parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=os.path.abspath("../") + "/config/config.json")
+parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=str(pathlib.Path(__file__).parent.parent.absolute()) + "/config/config.json")
 # parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/config/token.json')
 # parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
 # # parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
