@@ -31,3 +31,5 @@
 2. argparser 사용하여 argument 설정 및 default 값 지정
 
 3. class 구현하여 1차 refactoring 진행
+
+4. config 파일 적용 및 file path 오류 해결
