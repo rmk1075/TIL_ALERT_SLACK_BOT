@@ -1,6 +1,11 @@
 {
-    "url": "https://slack.com/api",
+    "url": "https://slack.com/api/",
     "bot": {
         "id": "U01NKV5PPCP"
+    },
+    "channel_name": "til",
+    "token_info": {
+        "path": "/config/token.json",
+        "name": "test_token"
     }
 }
