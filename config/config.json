@@ -3,9 +3,9 @@
     "bot": {
         "id": "U01NKV5PPCP"
     },
-    "channel_name": "til",
+    "channel_name": "today-i-learned",
     "token_info": {
         "path": "/config/token.json",
-        "name": "test_token"
+        "name": "token"
     }
 }
