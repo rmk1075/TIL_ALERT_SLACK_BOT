@@ -12,46 +12,49 @@ from api.api import Api
 from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/resource/token.json')
-# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
-parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
-# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
-parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
-parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")
+parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=os.path.abspath("../") + "/config/config.json")
+# parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/config/token.json')
+# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
+# # parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
+# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
+# # parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
+# parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
 
 if __name__ == "__main__":
     # 현재 시간 log
     print(time.strftime('%c', time.localtime(time.time())))
 
     args = parser.parse_args()
-    parent_path = os.path.abspath('..')
-    token_path = parent_path + args.token_path
-    token_name = args.token_name
-    channel_name = args.channel_name
-    url = args.url
+    config_path = args.config_path
+    # parent_path = os.path.abspath('..')
+    # token_path = parent_path + args.token_path
+    # token_name = args.token_name
+    # channel_name = args.channel_name
+    # url = args.url
 
     # init Slack
-    slack = Slack(token_path=token_path, token_name=token_name, channel_name=channel_name)
+    # slack = Slack(token_path=token_path, token_name=token_name, channel_name=channel_name)
+    slack = Slack(config_path=config_path)
     if slack == None:
         sys.stderr.write("Failed to init Slack instance.\n")
         sys.exit(-1)
 
     # init Api
-    api = Api(url=url)
+    api = Api(url=slack.url)
     if api == None:
         sys.stderr.write("Failed to init Api instance.\n")
         sys.exit(-1)
 
     # create ApiHandler
-    api_handler = ApiHandler(api)
+    api_handler = ApiHandler(api=api, token=slack.token)
     if api_handler == None:
         sys.stderr.write("Failed to create ApiHandler instance.\n")
         sys.exit(-1)
 
     # conversations.list api를 사용하여서 slack 대화 채널 id 조회
     # channel_id = find_channel_id(slack.token, slack.channel_name)
-    channel_id = api_handler.get_channel_id(slack.token, slack.channel_name)
+    channel_id = api_handler.get_channel_id(slack.channel_name)
     if channel_id == None:
         sys.stderr.write("Failed to get channel_id\n")
         sys.exit(-1)
@@ -65,13 +68,13 @@ if __name__ == "__main__":
         print("counting mode")
 
         # conversations.history api를 사용하여서 til 작성한 user들의 id 조회
-        user_list = api_handler.get_user_list(slack.token, channel_id)
+        user_list = api_handler.get_user_list(channel_id)
         if user_list == None:
             sys.stderr.write("Failed to get user_list\n")
             sys.exit(-1)
 
         # user_list의 user id를 통해서 user 이름 조회
-        user_names_list = api_handler.get_user_names(slack.token, channel_id, user_list)
+        user_names_list = api_handler.get_user_names(channel_id, user_list)
         if user_names_list == None:
             sys.stderr.write("Failed to get user_names\n")
             sys.exit(-1)
@@ -85,6 +88,7 @@ if __name__ == "__main__":
         message = f'금일 til을 작성한 인원은 {user_names}총 {user_cnt}명 입니다.\n오늘 하루도 수고하셨습니다.'
 
     # 메세지 전송
-    if api_handler.post_message(slack.token, channel_id, message) == None:
+    if api_handler.post_message(channel_id, message) == None:
         sys.stderr.write("Failed to post message")
         sys.exit(-1)
+    print(message)

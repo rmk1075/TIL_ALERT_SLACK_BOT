@@ -1,16 +1,20 @@
+import os
 import sys
 import json
 
 class Slack:
     def __init__(self, **kwargs):
-        self._token_path = kwargs["token_path"]
-        self._token_name = kwargs["token_name"]
-        self._token = None
-        self._channel_name = kwargs["channel_name"]
-
-        self._token = self._load_token(self._token_path, self._token_name)
-        if self._token == None:
+        self.__config_path = kwargs["config_path"]
+        self.__config = self._load_file(self.__config_path)
+        if self.__config == None:
             return None
+
+        self._url = self.__config["url"]
+        self._bot = self.__config["bot"]
+        self._channel_name = self.__config["channel_name"]
+        self._token_info = self.__config["token_info"]
+
+        self._token = self._load_file(os.path.abspath("../") + self._token_info["path"])[self._token_info["name"]]
 
     def _load_token(self, token_path: str, token_name: str):
         tokens = []
@@ -23,6 +27,19 @@ class Slack:
             return None
 
         return tokens[token_name]
+
+    def _load_file(self, file_path: str):
+        try:
+            with open(file_path, 'r') as json_file:
+                return json.load(json_file)
+        except Exception as e:
+            sys.stderr.write(f"Failed to load file {file_path}.\n")
+            sys.stderr.write(f"error log - {e}\n")
+            return None
+
+    @property
+    def url(self):
+        return self._url
 
     @property
     def token(self):

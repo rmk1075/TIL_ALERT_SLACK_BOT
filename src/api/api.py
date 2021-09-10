@@ -53,14 +53,15 @@ class Api:
 
 
 class ApiHandler:
-    def __init__(self, api: Api):
+    def __init__(self, api: Api, token: str):
         self.__api = api
+        self.__token = token
 
-    def get_channel_id(self, token: str, channel_name: str):
+    def get_channel_id(self, channel_name: str):
         # 파라미터
         # required args - token, accepted content type
         params = {
-            'token': token,
+            'token': self.__token,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
@@ -77,7 +78,7 @@ class ApiHandler:
 
         return channel_id
 
-    def get_user_list(self, token: str, channel_id: str):
+    def get_user_list(self, channel_id: str):
         user_list = set([])
 
         # oldest 시간 구하기 (현재 시간에서 1day를 빼고 계산)
@@ -87,7 +88,7 @@ class ApiHandler:
         method = 'conversations.history'
         params = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'token': token,
+            'token': self.__token,
             'channel': channel_id,
             'oldest': oldest
         }
@@ -113,12 +114,12 @@ class ApiHandler:
 
         return list(user_list)
 
-    def get_user_name(self, token: str, channel_id: str, user_id: str):
+    def get_user_name(self, channel_id: str, user_id: str):
         # 파라미터
         method = 'users.info'
         params = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'token': token,
+            'token': self.__token,
             'user': user_id,
         }
 
@@ -130,19 +131,19 @@ class ApiHandler:
         
         return user_info.json()['user']['real_name']
 
-    def get_user_names(self, token: str, channel_id: str, user_list: List[str]):
+    def get_user_names(self, channel_id: str, user_list: List[str]):
         user_names = []
         for user_id in user_list:
-            user_names.append(self.get_user_name(token, channel_id, user_id))
+            user_names.append(self.get_user_name(channel_id, user_id))
         
         return user_names
 
-    def post_message(self, token: str, channel_id, message: str):
+    def post_message(self, channel_id, message: str):
         # 파라미터
         method = 'chat.postMessage'
         params = {
             'Context_Type': 'application/x-www-form-urlencoded',
-            'token': token,
+            'token': self.__token,
             'channel': channel_id,
             'text': message
         }
