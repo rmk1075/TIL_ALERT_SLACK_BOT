@@ -22,21 +22,6 @@ class Api:
         response = requests.get(method, params=params)
         return response
 
-    # conversations.list
-    def get_conversations_list(self, params: dict):
-        method = 'conversations.list'
-        try:
-            response = self.request(method=self._url + method, params=params)
-            if not response.json()['ok']:
-                raise ApiException(f'[error][{method}][{datetime.datetime.now()}] call \'{method}\' api error. \n[error message]{response.json()["error"]}\n')
-            return response                
-        except ApiException as e:
-            print(f"Api Exception occurred: {e}")
-            return None
-        except Exception as e:
-            print(f"error occured : {e}")
-            return None
-
     # request api
     def api_request(self, method: str, params: dict):
         try:
@@ -59,13 +44,13 @@ class ApiHandler:
 
     def get_channel_id(self, channel_name: str):
         # 파라미터
-        # required args - token, accepted content type
+        method = 'conversations.list'
         params = {
             'token': self.__token,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
-        conversations = self.__api.get_conversations_list(params)
+        conversations = self.__api.api_request(method=method, params=params)
         if not conversations:
             sys.stderr.write("Failed to get conversations list\n")
             return None

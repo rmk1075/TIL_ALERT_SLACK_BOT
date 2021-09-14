@@ -14,13 +14,7 @@ from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")
-parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=str(pathlib.Path(__file__).parent.parent.absolute()) + "/config/config.json")
-# parser.add_argument("-p", "--token_path", help="path of token.json file", type=str, default='/config/token.json')
-# parser.add_argument("-t", "--token_name", help="name of token", type=str, default='test_token')
-# # parser.add_argument("-t", "--token_name", help="name of token", type=str, default='token')
-# parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='til')
-# # parser.add_argument("-c", "--channel_name", help="name of slack channel", type=str, default='today-i-learned')
-# parser.add_argument("-u", "--url", help="api server url", type=str, default='https://slack.com/api/')
+parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=str(pathlib.Path(__file__).parent.absolute().parent.absolute()) + "/config/config.json")
 
 if __name__ == "__main__":
     # 현재 시간 log
@@ -28,14 +22,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     config_path = args.config_path
-    # parent_path = os.path.abspath('..')
-    # token_path = parent_path + args.token_path
-    # token_name = args.token_name
-    # channel_name = args.channel_name
-    # url = args.url
 
     # init Slack
-    # slack = Slack(token_path=token_path, token_name=token_name, channel_name=channel_name)
     slack = Slack(config_path=config_path)
     if slack == None:
         sys.stderr.write("Failed to init Slack instance.\n")
@@ -54,7 +42,6 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     # conversations.list api를 사용하여서 slack 대화 채널 id 조회
-    # channel_id = find_channel_id(slack.token, slack.channel_name)
     channel_id = api_handler.get_channel_id(slack.channel_name)
     if channel_id == None:
         sys.stderr.write("Failed to get channel_id\n")
