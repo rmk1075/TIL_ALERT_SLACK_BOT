@@ -5,7 +5,7 @@
     },
     "channel_name": "today-i-learned",
     "token_info": {
-        "path": "/config/token.json",
+        "path": "/usr/app/config/token.json",
         "name": "token"
     }
 }
