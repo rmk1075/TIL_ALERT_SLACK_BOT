@@ -8,13 +8,13 @@ import pathlib
 
 from typing import List
 
-from src.slack import Slack
-from src.api.api import Api
-from src.api.api import ApiHandler
+from slack import Slack
+from api.api import Api
+from api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")
-parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=str(pathlib.Path(__file__).parent.parent.absolute()) + "usr/app/config/config.json")
+parser.add_argument("-c", "--config_path", help="path of config file", type=str, default=str(pathlib.Path(__file__).parent.absolute().parent.absolute()) + "/config/config.json")
 
 if __name__ == "__main__":
     # 현재 시간 log

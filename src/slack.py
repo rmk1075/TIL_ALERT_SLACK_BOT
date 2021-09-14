@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import pathlib
@@ -14,8 +15,11 @@ class Slack:
         self._channel_name = self.__config["channel_name"]
         self._token_info = self.__config["token_info"]
 
-        file_path = self._token_info["path"]
+        file_path = self._get_file_path(self.__config_path, self._token_info["path"])
         self._token = self._load_file(file_path)[self._token_info["name"]]
+
+    def _get_file_path(self, root: str, path: str):
+        return pathlib.Path("/".join([os.path.dirname(root), path])).resolve()
 
     def _load_file(self, file_path: str):
         try:
