@@ -14,19 +14,8 @@ class Slack:
         self._channel_name = self.__config["channel_name"]
         self._token_info = self.__config["token_info"]
 
-        self._token = self._load_file(str(pathlib.Path(__file__).parent.parent.absolute()) + self._token_info["path"])[self._token_info["name"]]
-
-    def _load_token(self, token_path: str, token_name: str):
-        tokens = []
-        with open(token_path, 'r') as token_json:
-            tokens = json.load(token_json)
-
-        # token_name validation
-        if token_name not in tokens.keys():
-            sys.stderr.write(f"Wrong token name is given. - {token_name}\n")
-            return None
-
-        return tokens[token_name]
+        file_path = self._token_info["path"]
+        self._token = self._load_file(file_path)[self._token_info["name"]]
 
     def _load_file(self, file_path: str):
         try:
