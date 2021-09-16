@@ -9,3 +9,11 @@ class User:
         # self.__count
         # self.__crtnDate
         # self.__chgDate
+    
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def real_name(self):
+        return self.__real_name
