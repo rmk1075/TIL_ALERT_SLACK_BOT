@@ -8,9 +8,11 @@ import pathlib
 
 from typing import List
 
-from slack import Slack
-from api.api import Api
-from api.api import ApiHandler
+sys.path.append(str(pathlib.Path(__file__).parent.absolute().parent.absolute()))
+
+from src.slack import Slack
+from src.api.api import Api
+from src.api.api import ApiHandler
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--alert", help="excute alert mode", action="store_true")

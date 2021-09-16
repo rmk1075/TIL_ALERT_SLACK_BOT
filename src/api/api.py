@@ -7,7 +7,7 @@ import datetime
 from pandas import json_normalize
 from typing import List
 
-from exceptions.api_exception import ApiException
+from src.exceptions.api_exception import ApiException
 
 class Api:
     def __init__(self, **kwargs):
