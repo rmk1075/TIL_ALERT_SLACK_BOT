@@ -92,12 +92,7 @@ class ApiHandler:
 
         return user_info.json()["user"]
 
-    def get_user_list(self, conversation_id: str):
-        user_list = set([])
-
-        # oldest 시간 구하기 (현재 시간에서 1day를 빼고 계산)
-        oldest = time.mktime((datetime.datetime.now() - datetime.timedelta(days = 1)).timetuple())
-
+    def get_conversations_history(self, conversation_id: str, oldest: float):
         # 파라미터
         method = 'conversations.history'
         params = {
@@ -111,46 +106,19 @@ class ApiHandler:
         if not conversations_history:
             sys.stderr.write(f"Failed to get {method}.\n")
             return None
-        
+
         # 어제 날짜 확인을 위한 patter 생성
         yesterday = datetime.date.today() - datetime.timedelta(1)
         pattern = re.compile(yesterday.strftime('\\[%Y.%m.%d\\]') + '*')
 
         # 메세지 확인
-        # 1. slack bot 제외 ('U01NKV5PPCP')
-        # 2. 날짜 확인
+        # 날짜 포맷 확인 [yyyy.mm.dd]
+        conversation_list = []
         for message in conversations_history.json()['messages']:
-            if message['user'] == 'U01NKV5PPCP':
-                continue
-
             if pattern.match(message['text']):
-                user_list.add(message['user'])
+                conversation_list.append(message)
 
-        return list(user_list)
-
-    def get_user_name(self, conversation_id: str, user_id: str):
-        # 파라미터
-        method = 'users.info'
-        params = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'token': self.__token,
-            'user': user_id,
-        }
-
-        # response = requests.get(self., params=params)
-        user_info = self.__api.api_request(method=method, params=params)
-        if not user_info:
-            sys.stderr.write(f"Failed to get {method}")
-            return None
-        
-        return user_info.json()['user']['real_name']
-
-    def get_user_names(self, conversation_id: str, user_list: List[str]):
-        user_names = []
-        for user_id in user_list:
-            user_names.append(self.get_user_name(conversation_id, user_id))
-        
-        return user_names
+        return conversation_list
 
     def post_message(self, conversation_id, message: str):
         # 파라미터
