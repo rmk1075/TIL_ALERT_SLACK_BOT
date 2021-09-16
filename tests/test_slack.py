@@ -20,7 +20,7 @@ class TestSlack(unittest.TestCase):
                     "bot": {
                         "id": "DUMMY"
                     },
-                    "channel_name": "Channel",
+                    "conversation_name": "Channel",
                     "token_info": {
                         "path": self.token_path,
                         "name": "token"
@@ -37,7 +37,7 @@ class TestSlack(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.config["url"], self.slack.url)
         self.assertEqual(self.token['token'], self.slack.token)
-        self.assertEqual(self.config['channel_name'], self.slack.channel_name)
+        self.assertEqual(self.config['conversation_name'], self.slack.conversation_name)
 
     def test_load_file(self):
         self.assertEqual(self.config, self.slack._load_file(self.config_path))

@@ -8,11 +8,11 @@ class Slack:
         self.__config_path = kwargs["config_path"]
         self.__config = self._load_file(self.__config_path)
         if self.__config == None:
-            raise RuntimeError()
+            raise RuntimeError('Failed to load config file')
 
         self._url = self.__config["url"]
-        self._bot = self.__config["bot"]
-        self._channel_name = self.__config["channel_name"]
+        self._bot = self.__config["bot"]["id"]
+        self._conversation_name = self.__config["conversation_name"]
         self._token_info = self.__config["token_info"]
 
         file_path = self._get_file_path(self.__config_path, self._token_info["path"])
@@ -39,5 +39,9 @@ class Slack:
         return self._token
 
     @property
-    def channel_name(self):
-        return self._channel_name
+    def conversation_name(self):
+        return self._conversation_name
+
+    @property
+    def bot(self):
+        return self._bot
