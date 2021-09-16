@@ -42,7 +42,7 @@ class ApiHandler:
         self.__api = api
         self.__token = token
 
-    def get_channel_id(self, channel_name: str):
+    def get_conversation_id(self, conversation_name: str):
         # 파라미터
         method = 'conversations.list'
         params = {
@@ -56,14 +56,43 @@ class ApiHandler:
             return None
 
         # 채널 리스트
-        channel_list = json_normalize(conversations.json()['channels'])
-        channel_id = list(channel_list.loc[channel_list['name'] == channel_name, 'id'])[0]
+        conversation_list = json_normalize(conversations.json()['channels'])
+        conversation_id = list(conversation_list.loc[conversation_list['name'] == conversation_name, 'id'])[0]
 
-        print('채널 이름: ', channel_name, '채널 id:', channel_id)
+        print('채널 이름: ', conversation_name, '채널 id:', conversation_id)
 
-        return channel_id
+        return conversation_id
 
-    def get_user_list(self, channel_id: str):
+    def get_conversations_members(self, conversation_id: str):
+        method = 'conversations.members'
+        params = {
+            'token': self.__token,
+            'channel': conversation_id
+        }
+
+        members = self.__api.api_request(method=method, params=params)
+        if not members:
+            sys.stderr.write("Failed to get members\n")
+            return None
+
+        return members.json()["members"]
+
+    def get_user_info(self, user_id: str):
+        method = 'users.info'
+        params = {
+            'token': self.__token,
+            'user': user_id,
+            'include_locale': True
+        }
+
+        user_info = self.__api.api_request(method=method, params=params)
+        if not user_info:
+            sys.stderr.write("Failed to get user\n")
+            return None
+
+        return user_info.json()["user"]
+
+    def get_user_list(self, conversation_id: str):
         user_list = set([])
 
         # oldest 시간 구하기 (현재 시간에서 1day를 빼고 계산)
@@ -74,7 +103,7 @@ class ApiHandler:
         params = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'token': self.__token,
-            'channel': channel_id,
+            'channel': conversation_id,
             'oldest': oldest
         }
 
@@ -99,7 +128,7 @@ class ApiHandler:
 
         return list(user_list)
 
-    def get_user_name(self, channel_id: str, user_id: str):
+    def get_user_name(self, conversation_id: str, user_id: str):
         # 파라미터
         method = 'users.info'
         params = {
@@ -116,20 +145,20 @@ class ApiHandler:
         
         return user_info.json()['user']['real_name']
 
-    def get_user_names(self, channel_id: str, user_list: List[str]):
+    def get_user_names(self, conversation_id: str, user_list: List[str]):
         user_names = []
         for user_id in user_list:
-            user_names.append(self.get_user_name(channel_id, user_id))
+            user_names.append(self.get_user_name(conversation_id, user_id))
         
         return user_names
 
-    def post_message(self, channel_id, message: str):
+    def post_message(self, conversation_id, message: str):
         # 파라미터
         method = 'chat.postMessage'
         params = {
             'Context_Type': 'application/x-www-form-urlencoded',
             'token': self.__token,
-            'channel': channel_id,
+            'channel': conversation_id,
             'text': message
         }
 
