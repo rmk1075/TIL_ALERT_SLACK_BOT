@@ -11,6 +11,7 @@ from src.models.message import Message
 
 class Runner:
     def __init__(self, args):
+        self._alert = args.alert
         self._slack = Slack(config_path=args.config_path)
         self._api = Api(url=self._slack.url)
         self._api_handler = ApiHandler(api=self._api, token=self._slack.token)
@@ -52,6 +53,17 @@ class Runner:
         return message_list, target_names
 
     def run(self):
+        if self._alert:
+            print("alert mode")
+
+            message = f'현재시간 {datetime.datetime.now().strftime("%H:%M")}입니다.\n아직 til을 작성하지 않으신 분은 빠르게 작성해주세요.'
+            print(message)
+
+            self.post_message(message=message)
+            return True
+
+        print("count mode")
+
         # get member list
         member_list = self._api_handler.get_conversations_members(conversation_id=self._conversation_id)
         
@@ -75,3 +87,5 @@ class Runner:
             sys.stderr.write("Failed to post message")
             sys.exit(-1)
         print(message)
+
+        return True

@@ -18,14 +18,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     runner = Runner(args)
-
-    # # argument '--alert' 사용시 alert 모드로 실행
-    if args.alert:
-        print("alert mode")
-        message = f'현재시간 {datetime.datetime.now().strftime("%H:%M")}입니다.\n아직 til을 작성하지 않으신 분은 빠르게 작성해주세요.'
-        print(message)
-
-        runner.post_message(message=message)
-        sys.exit(0)
-
     runner.run()
