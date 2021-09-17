@@ -16,7 +16,8 @@ class Slack:
         self._token_info = self.__config["token_info"]
 
         file_path = self._get_file_path(self.__config_path, self._token_info["path"])
-        self._token = self._load_file(file_path)[self._token_info["name"]]
+        token_name = self._token_info["name"]
+        self._token = self._load_file(file_path)[token_name]
 
     def _get_file_path(self, root: str, path: str):
         return pathlib.Path("/".join([os.path.dirname(root), path])).resolve()

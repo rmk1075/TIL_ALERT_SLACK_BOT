@@ -9,7 +9,7 @@ class TestSlack(unittest.TestCase):
         # craete token file
         self.token = {'token': 'DUMMY_TOKEN'}
 
-        self.token_path = '/usr/app/tests/token.json'
+        self.token_path = './token.json'
         if not os.path.isfile(self.token_path):
             with open(self.token_path, 'w') as token_file:
                 json.dump(self.token, token_file)
@@ -27,7 +27,7 @@ class TestSlack(unittest.TestCase):
                     }
                 }
 
-        self.config_path = '/usr/app/tests/test_config.json'
+        self.config_path = './test_config.json'
         with open(self.config_path, "w") as config_file:
             json.dump(self.config, config_file)
 
@@ -44,5 +44,5 @@ class TestSlack(unittest.TestCase):
 
     def tearDown(self):
         for file_path in [self.token_path, self.config_path]:
-            if os.path.isfile(file_path):
+            if os.path.isfile(os.path.abspath(file_path)):
                 os.remove(file_path)
